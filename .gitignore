@@ -1,0 +1,20 @@
+background_rep.md
+DataMatrix.jpg
+full_rep.md
+s-l1600.webp
+
+/test/
+/test_utils/
+/sample/
+/images/
+/full_example/
+/ControlNet QR/
+**/.idea/
+**/output/
+**/result/
+**/for_eval/
+/.git/
+/syn_datagen/SRNet-Datagen/
+/syn_datagen/data/.ipynb_checkpoints/
+/syn_datagen/data/data_new/
+**/__pycache__/
