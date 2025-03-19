@@ -18,4 +18,5 @@ s-l1600.webp
 /syn_datagen/data/.ipynb_checkpoints/
 /syn_datagen/data/data_new/
 **/__pycache__/
-/model/models/
+/model/models/vgg19-dcbb9e9d.pth
+/PC

@@ -17,9 +17,9 @@ borders_dir = 'borders'
 i_t_dir = 'i_t'
 
 # sample
-sample_num = 10000
+sample_num = 100000
 
 # multiprocess
-process_num = 3
-data_capacity = 3
+process_num = 5
+data_capacity = 5
 

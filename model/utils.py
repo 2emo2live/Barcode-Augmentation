@@ -118,11 +118,12 @@ if __name__ == "__main__":
     slm_img = SLM(base, new, mask)
     cv2.imwrite('C:/Users/phone/MIPT_conf_2025/1_slm.png', slm_img)'''
 
-    for i in range(20, 21):
-        mask = cv2.imread(f'C:/Users/phone/2D_bar_codes/model/output/full-train/val_visualization/iter-40000/{i}_o_mask_t.png')
-        base = cv2.imread(f'C:/Users/phone/2D_bar_codes/model/output/full-train/val_visualization/iter-40000/{i}_o_b.png')
-        new = cv2.imread(f'C:/Users/phone/2D_bar_codes/model/output/full-train/val_visualization/iter-40000/{i}_o_f.png')
+    path = "/PC/model/output/full-train-real/val_visualization/iter-050000/"
+    for i in range(1, 23):
+        mask = cv2.imread(path + f"{i}_o_mask_t.png")
+        base = cv2.imread(path + f"{i}_o_b.png")
+        new = cv2.imread(path + f"{i}_o_f.png")
         mask = mask > 0
 
         slm_img = SLM(base, new, mask)
-        cv2.imwrite(f'C:/Users/phone/2D_bar_codes/model/output/full-train/val_visualization/iter-40000/{i}_slm.png', slm_img)
+        cv2.imwrite(path + f"{i}_slm.png", slm_img)

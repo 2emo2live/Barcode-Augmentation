@@ -1,7 +1,5 @@
 import os
-import argparse
 import logging
-import numpy as np
 import cv2
 import torch
 from mmengine import Config
@@ -10,8 +8,6 @@ from torch.utils.data import DataLoader
 from loss import build_generator_loss, build_discriminator_loss, build_generator_loss_with_real
 from datagen import custom_dataset, TwoStreamBatchSampler
 from GAN import Generator, Discriminator, Vgg19
-#from rec_model import Rec_Model
-#from rec_utils import AttnLabelConverter
 from torch.utils.tensorboard import SummaryWriter
 
 
@@ -49,14 +45,13 @@ def get_logger(cfg, log_filename='log.txt', log_level=logging.INFO):
 
 
 def main():
-    """parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str)
-    args = parser.parse_args()"""
     config_path = "config.py"
 
     cfg = Config.fromfile(config_path)
-    #gpu_num = torch.cuda.device_count()
-    gpu_num = 1
+    if device == "cuda":    
+        gpu_num = torch.cuda.device_count()
+    else:
+        gpu_num = 1
 
     logger = get_logger(cfg)
     logger.info('Config path: {}'.format(config_path))
@@ -68,7 +63,7 @@ def main():
         synth_idxs = list(range(len_synth))
         real_idxs = list(range(len_synth, len_synth + len_real))
         batch_sampler = TwoStreamBatchSampler(synth_idxs, real_idxs, cfg.batch_size,
-                                              cfg.real_bs)  # default: shuffle = True, drop_last = True
+                                              cfg.real_bs)
         train_loader = DataLoader(
             dataset=train_data,
             batch_sampler=batch_sampler,
@@ -92,23 +87,18 @@ def main():
     D1 = Discriminator(cfg, in_channels=6).to(device)
     D2 = Discriminator(cfg, in_channels=6).to(device)
     vgg_features = Vgg19(cfg.vgg19_weights).to(device)
-    '''if cfg.with_recognizer:
-        converter = AttnLabelConverter('0123456789abcdefghijklmnopqrstuvwxyz')
-        Recognizer = Rec_Model(cfg)
-        rec_state_dict = torch.load(cfg.rec_ckpt_path, map_location='cpu')
-        if len(rec_state_dict) == 1:
-            rec_state_dict = rec_state_dict['recognizer']
-        rec_state_dict = {k.replace('module.', ''): v for k, v in rec_state_dict.items()}
-        Recognizer.cuda()
-        Recognizer.load_state_dict(rec_state_dict)
-        logger.info('Recognizer module loaded: {}'.format(cfg.rec_ckpt_path))'''
+    
     G_solver = torch.optim.Adam(G.parameters(), lr=cfg.learning_rate, betas=(cfg.beta1, cfg.beta2))
     D1_solver = torch.optim.Adam(D1.parameters(), lr=cfg.learning_rate, betas=(cfg.beta1, cfg.beta2))
     D2_solver = torch.optim.Adam(D2.parameters(), lr=cfg.learning_rate, betas=(cfg.beta1, cfg.beta2))
-    '''if cfg.with_recognizer and cfg.train_recognizer:
-        Rec_solver = torch.optim.Adam(Recognizer.parameters(), lr=cfg.rec_lr_weight * cfg.learning_rate,
-                                      betas=(cfg.beta1, cfg.beta2))'''
 
+    if gpu_num > 1:
+        logger.info('Parallel Computing. Using {} GPUs.'.format(gpu_num))
+    G = torch.nn.DataParallel(G, device_ids=range(gpu_num))
+    D1 = torch.nn.DataParallel(D1, device_ids=range(gpu_num))
+    D2 = torch.nn.DataParallel(D2, device_ids=range(gpu_num))
+    vgg_features = torch.nn.DataParallel(vgg_features, device_ids=range(gpu_num))        
+    
     if os.path.exists(cfg.ckpt_path):
         checkpoint = torch.load(cfg.ckpt_path, map_location='cpu')
         G.load_state_dict(checkpoint['generator'])
@@ -126,15 +116,6 @@ def main():
         logger.info('Inpainting module loaded: {}'.format(cfg.inpaint_ckpt_path))
     else:
         logger.info('Inpainting module not found')
-
-    '''if gpu_num > 1:
-        logger.info('Parallel Computing. Using {} GPUs.'.format(gpu_num))
-    G = torch.nn.DataParallel(G, device_ids=range(gpu_num))
-    D1 = torch.nn.DataParallel(D1, device_ids=range(gpu_num))
-    D2 = torch.nn.DataParallel(D2, device_ids=range(gpu_num))
-    vgg_features = torch.nn.DataParallel(vgg_features, device_ids=range(gpu_num))'''
-    '''if cfg.with_recognizer:
-        Recognizer = torch.nn.DataParallel(Recognizer, device_ids=range(gpu_num))'''
 
     # Train discriminator
     requires_grad(G, False)
@@ -158,9 +139,6 @@ def main():
                 },
                 cfg.checkpoint_savedir + f'train_step-{step + 1}.model',
             )
-            '''if cfg.with_recognizer:
-                torch.save({'recognizer': Recognizer.module.state_dict()},
-                           cfg.checkpoint_savedir + 'best_recognizer.model')'''
 
         try:
             i_t, i_s, t_b, t_f, mask_t, mask_s = next(trainiter)
@@ -174,13 +152,6 @@ def main():
         mask_t = mask_t.to(device)
         mask_s = mask_s.to(device)
 
-        '''if cfg.with_recognizer:
-            texts, texts_length = converter.encode(texts, batch_max_length=34)
-            texts = texts.cuda()
-            rec_target = texts[:, 1:]
-            labels = [t_b, t_f, mask_t, mask_s, rec_target]
-        else:
-            labels = [t_b, t_f, mask_t, mask_s]'''
         labels = [t_b, t_f, mask_t, mask_s]
 
         o_b_ori, o_b, o_f, x_t_tps, o_mask_s, o_mask_t = G(i_s, i_t)
@@ -215,8 +186,6 @@ def main():
         requires_grad(D2, False)
 
         G_solver.zero_grad()
-        '''if cfg.with_recognizer and cfg.train_recognizer:
-            Rec_solver.zero_grad()'''
         o_b_ori, o_b, o_f, x_t_tps, o_mask_s, o_mask_t = G(i_s, i_t)
 
         if cfg.with_real_data:
@@ -230,17 +199,6 @@ def main():
         o_df_pred = D2(i_df_pred)
         i_vgg = torch.cat((t_f, o_f), dim=0)
         out_vgg = vgg_features(i_vgg)
-        '''if cfg.with_recognizer:
-            if cfg.use_rgb:
-                tmp_o_f = o_f
-                tmp_t_f = t_f
-            else:
-                tmp_o_f = rgb2grey(o_f)
-                tmp_t_f = rgb2grey(t_f)
-            rec_preds = Recognizer(tmp_o_f, texts[:, :-1], is_train=False)
-            out_g = [o_b, o_f, o_mask_s, o_mask_t, rec_preds]
-        else:
-            out_g = [o_b, o_f, o_mask_s, o_mask_t]'''
         out_g = [o_b, o_f, o_mask_s, o_mask_t]
         out_d = [o_db_pred, o_df_pred]
 
@@ -250,14 +208,12 @@ def main():
             g_loss, metrics = build_generator_loss(cfg, out_g, out_d, out_vgg, labels)
         g_loss.backward()
         G_solver.step()
-        '''if cfg.with_recognizer and cfg.train_recognizer:
-            Rec_solver.step()'''
 
         requires_grad(G, False)
         requires_grad(D1, True)
         requires_grad(D2, True)
 
-        if ((step + 1) % cfg.write_log_interval == 0):
+        if (step + 1) % cfg.write_log_interval == 0:
             loss_str = 'Iter: {}/{} | Gen:{:<10.6f} | D_bg:{:<10.6f} | D_fus:{:<10.6f} | G_lr:{} | D_lr:{}'.format(
                 step + 1, cfg.max_iter,
                 g_loss.item(),
@@ -277,7 +233,7 @@ def main():
                     writer.add_scalar(name + '/' + sub_name, sub_metric, step)
                 logger.info(loss_str)
 
-        if ((step + 1) % cfg.gen_example_interval == 0):
+        if (step + 1) % cfg.gen_example_interval == 0:
             savedir = os.path.join(cfg.example_result_dir, 'iter-' + str(step + 1).zfill(len(str(cfg.max_iter))))
             with torch.no_grad():
                 for inp in eval_loader:
@@ -308,5 +264,4 @@ def main():
 
 
 if __name__ == '__main__':
-    #print(torch.cuda.is_available())
     main()

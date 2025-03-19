@@ -106,7 +106,7 @@ class custom_dataset(Dataset):
 
                 self.real_name_list = []
                 for tmp_data_dir in self.real_data_dir:
-                    self.real_name_list += [os.path.join(tmp_data_dir, filename) for filename in
+                    self.real_name_list += [os.path.join(tmp_data_dir, '{}', filename) for filename in
                                             os.listdir(os.path.join(tmp_data_dir, cfg.i_s_dir))]
 
                 self.name_list += self.real_name_list
@@ -143,11 +143,13 @@ class custom_dataset(Dataset):
                 t_f = self.transform(t_f)
                 mask_t = self.transform(mask_t)
                 mask_s = self.transform(mask_s)
-            else:
-                i_t = Image.open(img_name.format(self.cfg.i_t_dir))
+            else:                                               
                 i_s = Image.open(img_name.format(self.cfg.i_s_dir))
+                i_t = Image.open(img_name.format(self.cfg.i_t_dir))
                 if i_s.mode != 'RGB':
                     i_s = i_s.convert('RGB')
+                if i_t.mode != 'RGB':
+                    i_t = i_t.convert('RGB')
                 i_t = self.transform(i_t)
                 i_s = self.transform(i_s)
                 t_f = i_s

@@ -54,9 +54,6 @@ def get_logger(cfg, log_filename='log.txt', log_level=logging.INFO):
 
 
 def main():
-    """parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str)
-    args = parser.parse_args()"""
     config_path = "config.py"
 
     cfg = Config.fromfile(config_path)
@@ -73,7 +70,6 @@ def main():
         num_workers=cfg.num_workers,
         pin_memory=True,
         drop_last=True)
-    #test = next(iter(train_loader))
     eval_data = erase_dataset(cfg, data_dir=cfg.example_data_dir, mode='eval')
     eval_loader = DataLoader(
         dataset=eval_data,
@@ -101,7 +97,7 @@ def main():
     trainiter = iter(train_loader)
     for step in tqdm(range(cfg.max_iter)):
         D1_solver.zero_grad()
-        if ((step + 1) % cfg.save_ckpt_interval == 0):
+        if (step + 1) % cfg.save_ckpt_interval == 0:
             torch.save(
                 {
                     'generator': G.state_dict(),
@@ -152,7 +148,7 @@ def main():
         requires_grad(G, False)
         requires_grad(D1, True)
 
-        if ((step + 1) % cfg.write_log_interval == 0):
+        if (step + 1) % cfg.write_log_interval == 0:
             loss_str = 'Iter: {}/{} | Gen:{:<10.6f} | D_bg:{:<10.6f} | G_lr:{} | D_lr:{}'.format(
                 step + 1, cfg.max_iter,
                 g_loss.item(),
@@ -169,7 +165,7 @@ def main():
                     writer.add_scalar(name + '/' + sub_name, sub_metric, step)
                 logger.info(loss_str)
 
-        if ((step + 1) % cfg.gen_example_interval == 0):
+        if (step + 1) % cfg.gen_example_interval == 0:
             savedir = os.path.join(cfg.example_result_dir, 'iter-' + str(step + 1).zfill(len(str(cfg.max_iter))))
             with torch.no_grad():
                 for inp in eval_loader:
