@@ -6,7 +6,7 @@ Written by Yu Qian
 """
 
 # dir
-data_dir = 'result/'
+data_dir = '../train_data/synt_data'
 i_s_dir = 'i_s'
 t_t_dir = 't_t'
 t_b_dir = 't_b'

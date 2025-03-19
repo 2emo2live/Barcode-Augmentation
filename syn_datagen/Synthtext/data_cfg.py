@@ -6,24 +6,11 @@ Written by Yu Qian
 """
 import numpy as np
 
-# font
-font_size = [25, 60]
-underline_rate = 0.01
-strong_rate = 0.05
-oblique_rate = 0.02
-font_dir = 'data/data_new/fonts'
-standard_font_path = 'data/data_new/fonts/ArialRegular.ttf'
-
-# text
-text_filepath = 'data/texts.txt'
-capitalize_rate = 0.1
-uppercase_rate = 0.04
-
 # background
-bg_filepath = 'data/data_new/bg_path.txt'
+bg_filepath = '../data/data_new/bg_path.txt'
 
 # code
-code_filepath = 'data/data_new/code_path.txt'
+code_filepath = '../data/data_new/code_path.txt'
 
 ## background augment
 brightness_rate = 0.8
@@ -46,7 +33,6 @@ zoom_param = [0.1, 1] # scale, shift for np.random.randn()
 shear_param = [2, 0] # scale, shift for np.random.randn()
 perspect_param = [0.0005, 0] # scale, shift for np.random.randn()
 
-# render
 
 ## surf augment
 elastic_rate = 0.001
@@ -62,5 +48,5 @@ shadow_angle_degree = [1, 3, 5, 7] # shift for shadow_angle_param
 shadow_angle_param = [0.5, None] # scale, shift for np.random.randn()
 shadow_shift_param = np.array([[0, 1, 3], [2, 7, 15]], dtype = np.float32) # scale, shift for np.random.randn()
 shadow_opacity_param = [0.1, 0.5] # shift for shadow_angle_param
-color_filepath = 'data/colors_new.cp'
+color_filepath = '../data/colors_new.cp'
 use_random_color_rate = 0.5

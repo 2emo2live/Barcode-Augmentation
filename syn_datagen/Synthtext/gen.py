@@ -32,25 +32,16 @@ class datagen():
         freetype.init()
         cur_file_path = os.path.dirname(__file__)
 
-        font_dir = os.path.join(cur_file_path, data_cfg.font_dir)
-        self.font_list = os.listdir(font_dir)
-        self.font_list = [os.path.join(font_dir, font_name) for font_name in self.font_list]
-        self.standard_font_path = os.path.join(cur_file_path, data_cfg.standard_font_path)
-
         color_filepath = os.path.join(cur_file_path, data_cfg.color_filepath)
         self.colorsRGB, self.colorsLAB = colorize.get_color_matrix(color_filepath)
 
-        # text_filepath = os.path.join(cur_file_path, data_cfg.text_filepath)
-        # self.text_list = open(text_filepath, 'r').readlines()
-        # self.text_list = [text.strip() for text in self.text_list]
-
         bg_filepath = os.path.join(cur_file_path, data_cfg.bg_filepath)
         self.bg_list = open(bg_filepath, 'r').readlines()
-        self.bg_list = [img_path.strip() for img_path in self.bg_list]
+        self.bg_list = [os.path.join(cur_file_path, img_path.strip()) for img_path in self.bg_list]
 
         code_filepath = os.path.join(cur_file_path, data_cfg.code_filepath)
         self.code_list = open(code_filepath, 'r').readlines()
-        self.code_list = [img_path.strip() for img_path in self.code_list]
+        self.code_list = [os.path.join(cur_file_path, img_path.strip()) for img_path in self.code_list]
 
         self.surf_augmentor = Augmentor.DataPipeline(None)
         self.surf_augmentor.random_distortion(probability=data_cfg.elastic_rate,
@@ -69,27 +60,6 @@ class datagen():
     def gen_srnet_data_with_background(self):
 
         while True:
-            # choose font, text and bg
-            # font = np.random.choice(self.font_list)
-            # text1, text2 = np.random.choice(self.text_list), np.random.choice(self.text_list)
-
-            '''upper_rand = np.random.rand()
-            if upper_rand < data_cfg.capitalize_rate + data_cfg.uppercase_rate:
-                text1, text2 = text1.capitalize(), text2.capitalize()
-            if upper_rand < data_cfg.uppercase_rate:
-                text1, text2 = text1.upper(), text2.upper()
-            bg = cv2.imread(random.choice(self.bg_list))'''
-
-            # init font
-            '''font = freetype.Font(font)
-            font.antialiased = True
-            font.origin = True
-
-            # choose font style
-            font.size = np.random.randint(data_cfg.font_size[0], data_cfg.font_size[1] + 1)
-            font.underline = np.random.rand() < data_cfg.underline_rate
-            font.strong = np.random.rand() < data_cfg.strong_rate
-            font.oblique = np.random.rand() < data_cfg.oblique_rate'''
 
             bg = cv2.imread(random.choice(self.bg_list))
 
@@ -105,13 +75,8 @@ class datagen():
                               + data_cfg.curve_rate_param[1],
                 # 'curve_center': np.random.randint(0, len(text1))
             }
-            # surf1, bbs1 = render_text_mask.render_text(font, text1, param)
-            #surf1 = cv2.imread('C:/Users/phone/2D_bar_codes/syn_datagen/SRNet-Datagen/Synthtext/data/QR_test.png')
             bbs1 = surf1.copy()                 # ??? -> размер блока
             surf1 = 255 - surf1[:, :, 0]
-            # param['curve_center'] = int(param['curve_center'] / len(text1) * len(text2))
-            # surf2, bbs2 = render_text_mask.render_text(font, text2, param)
-            #surf2 = cv2.imread('C:/Users/phone/2D_bar_codes/syn_datagen/SRNet-Datagen/Synthtext/data/DataMatrix_test.jpg')
             bbs2 = surf2.copy()
             surf2 = 255 - surf2[:, :, 0]
 
@@ -162,14 +127,10 @@ class datagen():
             self.bg_augmentor.augmentor_images = bgs
             t_b = self.bg_augmentor.sample(1)[0][0]
 
-            # render standard text <-> накладываем текст на серый фон
-            # i_t = render_standard_text.make_standard_text(self.standard_font_path, text2, (surf_h, surf_w))
-
             # get min h of bbs
             min_h1 = np.min(bbs1[:, 3])
             min_h2 = np.min(bbs2[:, 3])
             min_h = min(min_h1, min_h2)
-            #min_h = 0
 
             # get font color
             if np.random.rand() < data_cfg.use_random_color_rate:
@@ -204,11 +165,8 @@ class datagen():
                 surf2 = noise.add_poisson_noise(surf2, 0.05)
                 t_f = noise.add_poisson_noise(t_f, 0.05)
 
-            # skeletonization
-            # t_sk = skeletonization.skeletonization(surf2, 127) # NOT NOW
             break
 
-        # return [i_t, i_s, t_sk, t_t, t_b, t_f, surf2]
         return [i_s, t_t, t_b, t_f, surf1, surf2, border, i_t]
 
 

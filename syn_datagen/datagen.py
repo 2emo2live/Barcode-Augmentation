@@ -1,10 +1,3 @@
-"""
-Generating data for SRNet
-Copyright (c) 2019 Netease Youdao Information Technology Co.,Ltd.
-Licensed under the GPL License (see LICENSE for details)
-Written by Yu Qian
-"""
-
 import os
 import cv2
 import json
