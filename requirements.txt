@@ -1,0 +1,13 @@
+torch~=2.5.1+cu121
+torchvision~=0.20.1
+pillow~=11.1.0
+opencv-python~=4.10.0.84
+numpy~=1.24.4
+scipy~=1.15.1
+mmengine~=0.10.5
+tqdm~=4.66.4
+pyzbar~=0.1.9
+Augmentor~=0.2.12
+pygame~=2.6.1
+scikit-image~=0.25.1
+matplotlib~=3.7.1
