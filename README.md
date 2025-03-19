@@ -5,6 +5,7 @@
 2) Установить все зависимости из requirements.txt
 3) Скачать архив bacground_data.zip и распаковать его в папку syn_datagen/data
 4) Запустить файл syn_datagen/datagen.py
-5) Скачать архив real_data.zip и распаковать его в папку train_data
-4) Скачать веса для VGG-модели и поместить их в папку model/models
-5) Запустить файл model/train_full
+5) Скачать архив real_data.zip и распаковать его в папку train_data 
+6) Скачать веса для VGG-модели и поместить их в папку model/models 
+7) Скачать архив test.zip и распаковать его в папку train_data
+8) Запустить файл model/train_full

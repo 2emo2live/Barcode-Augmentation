@@ -11,3 +11,4 @@ Augmentor~=0.2.12
 pygame~=2.6.1
 scikit-image~=0.25.1
 matplotlib~=3.7.1
+tensorboard

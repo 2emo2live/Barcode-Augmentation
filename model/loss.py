@@ -2,6 +2,8 @@ import torch
 import torch.nn.functional as F
 
 gpu_num = torch.cuda.device_count()
+if gpu_num == 0:
+    gpu_num = 1
 epsilon = 1e-8
 
 
@@ -129,12 +131,7 @@ def build_generator_loss(cfg, out_g, out_d, out_vgg, labels):
 
 
 def build_generator_loss_with_real(cfg, out_g, out_d, out_vgg, labels):
-    '''if cfg.with_recognizer:
-        o_b, o_f, o_mask_s, o_mask_t, rec_preds = out_g
-        t_b, t_f, mask_t, mask_s, rec_target = labels
-    else:
-        o_b, o_f, o_mask_s, o_mask_t = out_g
-        t_b, t_f, mask_t, mask_s = labels'''
+
     o_b, o_f, o_mask_s, o_mask_t = out_g
     t_b, t_f, mask_t, mask_s = labels
     o_db_pred, o_df_pred = out_d

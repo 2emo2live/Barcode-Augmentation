@@ -9,6 +9,7 @@ from loss import build_generator_loss, build_discriminator_loss, build_generator
 from datagen import custom_dataset, TwoStreamBatchSampler
 from GAN import Generator, Discriminator, Vgg19
 from torch.utils.tensorboard import SummaryWriter
+import shutil
 
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -261,6 +262,8 @@ def main():
                     cv2.imwrite(os.path.join(savedir, name + '_o_mask_s.' + suffix), o_mask_s * 255)
                     cv2.imwrite(os.path.join(savedir, name + '_o_mask_t.' + suffix), o_mask_t * 255)
                     cv2.imwrite(os.path.join(savedir, name + '_x_t_tps.' + suffix), x_t_tps[:, :, ::-1] * 255)
+
+    shutil.make_archive('../output', 'zip', 'output')
 
 
 if __name__ == '__main__':
